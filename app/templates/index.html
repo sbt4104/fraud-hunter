@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fraud Detection Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/static/style.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <span class="navbar-brand">
+                🛡️ Fraud Detection System
+                <span class="live-indicator"></span>
+            </span>
+            <span class="badge bg-success">Online</span>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Stats Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h5 id="total-agents-count">{{ stats.total_agents }}</h5>
+                                <p class="mb-0">Total Agents</p>
+                            </div>
+                            <div>
+                                <i class="fas fa-robot fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h5 id="running-agents-count">{{ stats.running_agents }}</h5>
+                                <p class="mb-0">Running Agents</p>
+                            </div>
+                            <div>
+                                <i class="fas fa-play fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h5 id="total-events-count">{{ stats.total_events }}</h5>
+                                <p class="mb-0">Events Processed</p>
+                            </div>
+                            <div>
+                                <i class="fas fa-chart-line fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h5 id="high-risk-count">{{ stats.high_risk_alerts }}</h5>
+                                <p class="mb-0">High Risk Alerts</p>
+                            </div>
+                            <div>
+                                <i class="fas fa-exclamation-triangle fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Agents Panel -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="fas fa-robot"></i> Fraud Hunter Agents</h5>
+                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createAgentModal">
+                            <i class="fas fa-plus"></i> Create Agent
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="agents-list">
+                            {% for agent in agents %}
+                            <div class="d-flex justify-content-between align-items-center border-bottom py-2 agent-item" data-agent-id="{{ agent.agent_id }}">
+                                <div>
+                                    <strong>{{ agent.name }}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        Events: <span class="events-count">{{ agent.events_processed }}</span> | 
+                                        Alerts: <span class="alerts-count">{{ agent.alerts_generated }}</span>
+                                    </small>
+                                </div>
+                                <div>
+                                    <span class="badge bg-{% if agent.status == 'running' %}success{% else %}secondary{% endif %} status-badge">
+                                        {{ agent.status.title() }}
+                                    </span>
+                                    <div class="btn-group btn-group-sm mt-1">
+                                        {% if agent.status == 'running' %}
+                                        <form method="post" action="/stop_agent/{{ agent.agent_id }}" style="display:inline;">
+                                            <button class="btn btn-warning btn-sm">⏹️ Stop</button>
+                                        </form>
+                                        {% else %}
+                                        <form method="post" action="/start_agent/{{ agent.agent_id }}" style="display:inline;">
+                                            <button class="btn btn-success btn-sm">▶️ Start</button>
+                                        </form>
+                                        {% endif %}
+                                        <form method="post" action="/delete_agent/{{ agent.agent_id }}" style="display:inline;">
+                                            <button class="btn btn-danger btn-sm" onclick="return confirm('Delete agent?')">🗑️</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Analyses -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-search"></i> Recent Fraud Analyses</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="analyses-list">
+                            {% for analysis in analyses %}
+                            <div class="border-bottom py-2 analysis-item" data-analysis-id="{{ analysis.analysis_id }}">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <strong>{{ analysis.event_id }}</strong>
+                                        <span class="badge bg-{% if analysis.risk_score > 0.7 %}danger{% elif analysis.risk_score > 0.5 %}warning{% else %}success{% endif %}">
+                                            {{ "%.2f"|format(analysis.risk_score) }}
+                                        </span>
+                                    </div>
+                                    <small class="text-muted">{{ analysis.timestamp.strftime('%H:%M:%S') }}</small>
+                                </div>
+                                <small class="text-muted">{{ analysis.reasoning[:60] }}...</small>
+                                <br>
+                                <small><strong>Actions:</strong> {{ analysis.recommended_actions|join(', ') }}</small>
+                                <button class="btn btn-sm btn-outline-primary ms-2 view-analysis-btn" data-analysis-id="{{ analysis.analysis_id }}">
+                                    <i class="fas fa-eye"></i> View Details
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Agent Modal -->
+    <div class="modal fade" id="createAgentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Fraud Hunter Agent</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createAgentForm">
+                        <div class="mb-3">
+                            <label class="form-label">Agent Name</label>
+                            <input type="text" class="form-control" name="name" required placeholder="e.g., Account Monitor Alpha">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Account IDs to Monitor</label>
+                            <input type="text" class="form-control" name="account_ids" placeholder="ACC001, ACC002, ACC003">
+                            <div class="form-text">Comma-separated list of account IDs to monitor</div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">🚀 Deploy Agent</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/app.js"></script>
+</body>
+</html>
