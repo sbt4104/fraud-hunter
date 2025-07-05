@@ -93,7 +93,8 @@ async def api_status():
    return {
        "status": "running",
        "agents": len(agents),
-       "running_agents": len([a for a in agents if a.status == "running"])
+       "running_agents": len([a for a in agents if a.status == "running"]),
+       "total_events": len(agent_manager.active_alerts),
    }
 
 @app.get("/api/agents")
@@ -154,6 +155,44 @@ async def api_get_analysis(analysis_id: str):
        raise HTTPException(status_code=404, detail="Analysis not found")
    
    return analysis.dict()
+
+@app.get("/api/alerts")
+async def api_get_alerts():
+    """Get active alerts with detailed explanations"""
+    alerts = agent_manager.get_active_alerts(50)
+    return alerts
+
+@app.get("/api/alerts/{alert_id}")
+async def api_get_alert_details(alert_id: str):
+    """Get detailed alert information"""
+    alert = agent_manager.get_alert_details(alert_id)
+    if not alert:
+        raise HTTPException(status_code=404, detail="Alert not found")
+    return alert
+
+@app.post("/api/alerts/{alert_id}/acknowledge")
+async def api_acknowledge_alert(alert_id: str):
+    """Acknowledge an alert"""
+    success = agent_manager.acknowledge_alert(alert_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Alert not found")
+    return {"success": True, "message": "Alert acknowledged"}
+
+@app.get("/api/status")
+async def api_status():
+    """Enhanced API status endpoint"""
+    agents = agent_manager.get_agents()
+    alerts = agent_manager.get_active_alerts(100)
+    
+    return {
+        "status": "running",
+        "agents": len(agents),
+        "running_agents": len([a for a in agents if a.status == "running"]),
+        "total_events": sum(a.events_processed for a in agents),
+        "high_risk_alerts": sum(a.alerts_generated for a in agents),
+        "active_alerts": len([a for a in alerts if a["status"] == "NEW"]),
+        "critical_alerts": len([a for a in alerts if a["severity"] == "CRITICAL"])
+    }
 
 if __name__ == "__main__":
    import uvicorn

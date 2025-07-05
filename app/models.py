@@ -46,3 +46,4 @@ class Analysis(BaseModel):
     fraud_indicators: List[str]
     reasoning: str
     recommended_actions: List[str]
+    supporting_events: List[Dict[str, Any]] = Field(default_factory=list)

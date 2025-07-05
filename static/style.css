@@ -162,3 +162,96 @@ body {
         align-items: flex-start !important;
     }
 }
+
+/* Alert-specific styling */
+.alert-item {
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    margin: 0.25rem 0;
+    background: rgba(255,255,255,0.9);
+}
+
+.alert-item:hover {
+    background: rgba(248,249,250,1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transform: translateX(3px);
+}
+
+.critical-alert {
+    border-left: 4px solid #dc3545;
+    background: rgba(220,53,69,0.05);
+}
+
+.critical-alert:hover {
+    background: rgba(220,53,69,0.1);
+}
+
+/* Enhanced modal styling */
+.modal-header.bg-danger {
+    background: linear-gradient(135deg, #dc3545, #c82333) !important;
+}
+
+.modal-header.bg-warning {
+    background: linear-gradient(135deg, #ffc107, #e0a800) !important;
+}
+
+.modal-header.bg-info {
+    background: linear-gradient(135deg, #17a2b8, #138496) !important;
+}
+
+/* Risk breakdown styling */
+.bg-light {
+    background: rgba(248,249,250,0.8) !important;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Badge enhancements */
+.badge.fs-6 {
+    font-size: 0.9rem !important;
+    padding: 0.4em 0.6em;
+}
+
+/* Alert list animations */
+.alert-item {
+    opacity: 0;
+    animation: slideIn 0.3s ease-out forwards;
+}
+
+.alert-item:nth-child(1) { animation-delay: 0.1s; }
+.alert-item:nth-child(2) { animation-delay: 0.2s; }
+.alert-item:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Button hover effects for alerts */
+.view-alert-btn:hover {
+    background-color: #0d6efd !important;
+    color: white !important;
+    transform: scale(1.05);
+}
+
+.ack-alert-btn:hover {
+    background-color: #198754 !important;
+    color: white !important;
+    transform: scale(1.05);
+}
+
+/* Severity indicators */
+.badge.bg-danger {
+    animation: pulse 2s infinite;
+}
+
+/* Risk score highlighting */
+.badge[class*="bg-"]:not(.bg-secondary) {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    font-weight: 600;
+}
