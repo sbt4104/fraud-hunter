@@ -41,6 +41,25 @@ pip install fastapi uvicorn qdrant-client langchain langchain-openai langgraph p
 
 ---
 
+## create .env 
+
+```bash
+OPENAI_API_KEY=sk-your_openai_key
+
+# Qdrant Configuration  
+QDRANT_URL=http://localhost:6333
+
+# Events API (mock for demo)
+EVENTS_API_URL=http://localhost:8000/mock-events
+```
+
+Verify Qdrant is running:
+```bash
+curl http://localhost:6333/health
+```
+
+---
+
 ## Run Qdrant (Vector Database)
 
 Start Qdrant using Docker Compose:
@@ -50,7 +69,7 @@ docker-compose up -d
 
 Verify Qdrant is running:
 ```bash
-curl http://localhost:6333/health
+curl http://localhost:6333/collections
 ```
 
 ---
