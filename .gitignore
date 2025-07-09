@@ -1,4 +1,4 @@
 .env
 qdrant_storage/*
-fraud-humter/*
+fraud-hunter/*
 app/__pycache__/*
